@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<!-- Apology website — single file: structure + styles + script. See README.md for setup steps. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>I'm Sorry 💗</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  :root {
+    --pink-50: #fff0f5;
+    --pink-100: #ffe1ec;
+    --pink-300: #ffb3d1;
+    --pink-500: #ff6fa5;
+    --pink-600: #ff3d7f;
+    --purple-300: #d9c6ff;
+    --text: #6b2a4a;
+    --glass: rgba(255, 255, 255, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.7);
+    --shadow-lg: 0 24px 60px rgba(255, 61, 127, 0.25);
+    --radius: 28px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'Quicksand', sans-serif;
+    color: var(--text);
+    background: linear-gradient(135deg, var(--pink-50), var(--pink-300) 45%, var(--purple-300));
+    background-size: 220% 220%;
+    animation: gradientShift 14s ease infinite;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  button {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .loading-video {
+  width: min(280px, 80vw);
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: 20px;
+  display: block;
+  margin: 0 auto;
+}
+  /* ---------- background layers ---------- */
+  .floating-hearts { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+  .floating-heart {
+    position: absolute; bottom: -60px;
+    animation-name: floatUp; animation-timing-function: ease-in; animation-fill-mode: forwards;
+    filter: drop-shadow(0 2px 6px rgba(255, 105, 160, 0.35));
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+    8% { opacity: 0.9; }
+    100% { transform: translateY(-115vh) rotate(360deg); opacity: 0; }
+  }
+    .media-placeholder img {
+  width: 100%;
+  max-width: 450px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 16px;
+}
+  .sparkle-container { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+  .sparkle {
+    position: absolute; width: 5px; height: 5px; background: #fff; border-radius: 50%;
+    box-shadow: 0 0 8px 3px rgba(255, 255, 255, 0.9);
+    animation-name: twinkle; animation-iteration-count: infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.4); }
+    50% { opacity: 1; transform: scale(1.3); }
+  }
+
+  #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+
+  /* ---------- screens ---------- */
+  .screen {
+    display: none; min-height: 100vh; width: 100%;
+    align-items: center; justify-content: center;
+    padding: 32px 20px; position: relative; z-index: 2;
+  }
+  .screen.active { display: flex; animation: fadeIn 0.7s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 52px 44px;
+    max-width: 560px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .eyebrow {
+    text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;
+    font-weight: 700; color: var(--pink-600); margin-bottom: 8px;
+  }
+
+  h1, h2 {
+    font-family: 'Dancing Script', cursive; font-weight: 700; color: var(--pink-600);
+    font-size: 2.6rem; line-height: 1.15; margin-bottom: 14px;
+  }
+
+  .wiggle { animation: wiggle 4s ease-in-out infinite; display: inline-block; }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-2deg); }
+    75% { transform: rotate(2deg); }
+  }
+
+  .pop { animation: pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes pop {
+    0% { transform: scale(0.4); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .question { font-size: 1.15rem; font-weight: 600; margin: 18px 0 28px; }
+  .final-text { font-size: 1.1rem; font-weight: 600; margin-top: 18px; }
+
+  .button-row {
+    display: flex; gap: 18px; justify-content: center; align-items: center;
+    flex-wrap: wrap; position: relative; min-height: 60px;
+  }
+
+  .btn {
+    border: none; font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 1.05rem;
+    padding: 15px 34px; border-radius: 999px; cursor: pointer; text-align: center;
+    transition: left 0.28s ease, top 0.28s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .btn-yes {
+    --scale: 1;
+    background: linear-gradient(135deg, var(--pink-500), var(--pink-600));
+    color: #fff; box-shadow: 0 12px 26px rgba(255, 61, 127, 0.4);
+    transform: scale(var(--scale));
+  }
+  .btn-yes:hover {
+    transform: scale(calc(var(--scale) * 1.08));
+    box-shadow: 0 16px 32px rgba(255, 61, 127, 0.5);
+  }
+
+  .btn-no {
+    background: #fff; color: var(--pink-600); border: 2px solid var(--pink-300); z-index: 50;
+    max-width: min(260px, 78vw);
+  }
+
+  .btn-no-real { background: #fff; color: var(--text); border: 2px solid #ddd; }
+  .btn-no-real:hover { background: #f9f9f9; }
+
+  .btn-continue {
+    margin-top: 28px;
+    background: linear-gradient(135deg, var(--pink-500), var(--purple-300));
+    color: #fff; box-shadow: 0 12px 26px rgba(217, 198, 255, 0.4);
+  }
+  .btn-continue:hover { transform: translateY(-2px); }
+
+  .dodge-counter {
+    margin-top: 16px; font-size: 0.9rem; font-weight: 600;
+    color: var(--pink-600); opacity: 0.85; min-height: 20px;
+  }
+
+  /* ---------- loading screen ---------- */
+  .loading-content { text-align: center; }
+  .loading-hearts { font-size: 2.6rem; margin-bottom: 18px; }
+  .loading-hearts span { display: inline-block; animation: heartbeat 1.2s ease-in-out infinite; }
+  .loading-hearts span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-hearts span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.35); }
+  }
+  .loading-text { font-weight: 600; font-size: 1.1rem; color: var(--pink-600); }
+  .loading-gif { max-width: 240px; border-radius: 20px; margin-bottom: 16px; }
+
+  /* ---------- apology content ---------- */
+  .apology-card { text-align: left; }
+  .apology-card h2 { text-align: center; }
+  .apology-text p { margin: 16px 0; line-height: 1.7; font-size: 1.02rem; }
+
+  .media-placeholder {
+    border: 2px dashed var(--pink-300); border-radius: 20px;
+    background: rgba(255, 255, 255, 0.45); color: var(--pink-600);
+    font-weight: 600; text-align: center; padding: 46px 20px; margin: 20px 0;
+  }
+  .media-placeholder.small { padding: 28px 16px; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 520px) {
+    .card { padding: 38px 24px; }
+    h1, h2 { font-size: 2.1rem; }
+    .btn { padding: 13px 26px; font-size: 0.98rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <audio id="backgroundMusic"></audio>
+
+<div class="floating-hearts" id="floatingHearts"></div>
+<canvas id="confetti-canvas"></canvas>
+
+<!-- SCREEN 1 — Landing -->
+<section class="screen active" id="screen-landing">
+  <div class="card">
+    <p class="eyebrow">Helloooo Ziiiiii</p>
+    <h1 class="wiggle">I made you something 👀</h1>
+    <p class="question">Would you like to read my apology?</p>
+    <div class="button-row">
+      <button class="btn btn-yes" id="btnYesLanding" type="button">Yes 💕</button>
+      <button class="btn btn-no" id="btnNoLanding" type="button">No</button>
+    </div>
+    <p class="dodge-counter" id="dodgeCounter"></p>
+  </div>
+</section>
+
+<!-- SCREEN 2 — Loading -->
+<section class="screen" id="screen-loading">
+  <div class="loading-content">
+    <!-- Want a real gif here instead of the heart animation? Replace this block with:
+         <img src="yay.gif" alt="Yay!" class="loading-gif"> -->
+    <div class="loading-hearts"><span>💗</span><span>💖</span><span>💓</span></div>
+    <video class="loading-video" autoplay muted playsinline>
+  <source src="YIPPEE_CAT.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+  </div>
+</section>
+
+<!-- SCREEN 3 — Apology -->
+<section class="screen" id="screen-apology">
+  <div class="card apology-card">
+    <h2>Sun na yrr Miss you yrr 🥺💗</h2>
+
+    
+    <div class="media-placeholder"><img src="WhatsApp Image 2026-08-22 at 10.16.37 AM.jpeg" alt="Us"></div>
+
+    <div class="apology-text">
+      <p>Hi Komal how've you been. I know its been so long but I started working on this website for a long time and I know you blocked me after reading my sms messages as well but i still couldnt give u on making this and show you my last efforts. I hope you are doing well in your life, exams are good friends are good. I just wanted to say that I have started a new life now and losing you not as a romantic interest but also as a friend is the biggest regret I ever have in my life. Every single day almost all the time I regret not being able to share anything with you, even the regret of losing you.
+        We had a wonderful bond yrr, theres never going to be anyone like you. You are the funniest most addicting and sweetest soul I've ever met.
+      </p>
+
+      <p>We falsely pretended that you don't reciprocate my efforts and love but I know you did that more than how much I did, I know you liked me 
+        back as well. I was wrong for always asking for reassurance. I was wrong for the stuff I said. But I just always wanted you to know and abhi bhi and baar baar bolta rahunga the stories on insta that night were not for you. I 
+        apologize for the gaaliya I said on the last day and am willing to face my punishments because of my anger, but I never intended to disrespect you usse pehle. I have tried may times to tell you this and I'll say it again and again. I do miss you alot.
+      </p>
+      <p>Now I'm in Canada trying my best to do well, make name study well make friends. But all of this is what I'm doing without you, this was my loss, I wish I get to do this all of this with you and that would be my gain,all of our fights I wanna forget for the sake of your company,
+         for your laugh, your voice, your eyes, hair, lips, body and above all for your sweet and surprising mind which is an enchanting quarry, and which it is my privilege to delve.
+      </p>
+      <div class="media-placeholder"><img src="/WhatsApp Image 2026-09-04 at 7.25.13 AM.jpeg"></div>
+      <p>I do miss you alot yrr. You remember how happy I got just by talking to you, don't take that from me please. I have never been the same since, kuch kha ni paya kyi dino se, randomly fainting bedrest pe rehta tha, 
+        the only good thing was parents thought unka fault hai and they started treating me better. I want to share every single stuff with you yrr. I thought I would move on but I remember you everywhere, when I'm listening on spotify, reading costar, listening to weeknd i only remember you.
+        I miss all the jokes you said, I miss how happy you got when you got the room for yourself, miss how you showed me your decorations, miss the video calls where I'm just laughing and you're pissed at my laughs, miss our Japanese jokes, missed you telling me how great your mother and Taanvi is and how much they mean to you, missed being your favorite person ever,
+        really loved when we said nice things to each other, it was so beautiful and perfect. I may not be able to meet you again soon but I miss the ragebaits, thats all I want. I said it shuru me bhi and wanna try it once again, I just want to be your friend forever, I want us some years in the future as friends looking back to these times and laughing and imagining this much didn't matter anyways and laughing at our gusse wala and fighting past. I won't be possessive of your time ya controlling you, I just want to be a part of your life.
+        <br> I never expected my fear of losing you would be the reason I lose you. But the decision is yours thank you for reading, feel free to explore some cute features for the website I made.
+      </p>
+    </div>
+
+    <!-- Replace with: <img src="photo2.jpg" alt="Another memory"> -->
+    <div class="media-placeholder"><img src="WhatsApp Image 2026-09-04 at 7.22.50 AM.jpeg" alt="Another memory"></div>
+
+    <button class="btn btn-continue" id="btnContinue" type="button">Keep reading →</button>
+  </div>
+</section>
+
+<!-- SCREEN 4 — Final question (real, not a joke) -->
+<section class="screen" id="screen-final">
+  <div class="card">
+    <h2>So...</h2>
+    <p class="question">Do you accept my apology?</p>
+    <div class="button-row">
+      <button class="btn btn-yes" id="btnYesFinal" type="button">Yes 🥺💕</button>
+      <button class="btn btn-no-real" id="btnNoFinal" type="button">No</button>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 5A — Accepted -->
+<section class="screen" id="screen-accepted">
+  <div class="card">
+    <h2 class="pop">Yayyy!! 🎉</h2>
+    <!-- Replace with: <img src="celebrate.gif" alt="Celebration"> -->
+    <div class="media-placeholder"><img src="images.jpg" alt="Celebration"></div>
+    <p class="final-text">Too unblock krdo plisss 💗</p>
+  </div>
+</section>
+
+<!-- SCREEN 5B — Declined (graceful fallback) -->
+<section class="screen" id="screen-declined">
+  <div class="card">
+    <h2>Okay 💙</h2>
+    <p class="final-text">Thank you for reading this. I understand — and I'm still sorry. I still wish I can start talking to you.</p>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    initBackgroundEffects();
+    initDodgeButton();
+    initScreenFlow();
+  });
+
+  /* ============ Screen management ============ */
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function initScreenFlow() {
+    document.getElementById('btnYesLanding').addEventListener('click', () => {
+      startMusic();
+      showScreen('screen-loading');
+      setTimeout(() => showScreen('screen-apology'), 2600);
+    });
+
+    document.getElementById('btnContinue').addEventListener('click', () => {
+      showScreen('screen-final');
+    });
+
+    document.getElementById('btnYesFinal').addEventListener('click', () => {
+      sendResponse('Yes');
+      showScreen('screen-accepted');
+      launchConfetti();
+    });
+
+    document.getElementById('btnNoFinal').addEventListener('click', () => {
+      sendResponse('No');
+      showScreen('screen-declined');
+    });
+  }
+
+  /* ============ Dodging "No" button — landing page only ============ */
+  const dodgeTexts = [
+    'Nooo wait',
+    'Please?',
+    'Please please?',
+    'Pretty please 🥺',
+    "C'mon...",
+    "Don't do this",
+    "I'll be sad :(",
+    "You're killing me here",
+    'Yes is right there →',
+    "It's literally one click",
+    'Fine, keep chasing me then',
+    'Okay this is a workout now',
+    '😭 please',
+    'Last chance...'
+  ];
+
+  function initDodgeButton() {
+    const noBtn = document.getElementById('btnNoLanding');
+    const yesBtn = document.getElementById('btnYesLanding');
+    const counter = document.getElementById('dodgeCounter');
+    let attempts = 0;
+    let scale = 1;
+
+    function dodge() {
+      attempts++;
+      const lastIndex = dodgeTexts.length - 1;
+      const idx = attempts - 1 <= lastIndex
+        ? attempts - 1
+        : lastIndex - Math.floor(Math.random() * 4);
+      noBtn.textContent = dodgeTexts[idx];
+
+      // measure AFTER the text changes so movement bounds match the new size
+      const rect = noBtn.getBoundingClientRect();
+      const padding = 20;
+      const maxX = Math.max(padding, window.innerWidth - rect.width - padding);
+      const maxY = Math.max(padding, window.innerHeight - rect.height - padding);
+      const x = padding + Math.random() * (maxX - padding);
+      const y = padding + Math.random() * (maxY - padding);
+
+      noBtn.style.position = 'fixed';
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top = `${y}px`;
+
+      scale = Math.min(scale + 0.045, 1.5);
+      yesBtn.style.setProperty('--scale', scale);
+
+      counter.textContent = `Nice try #${attempts} 😏`;
+    }
+
+    noBtn.addEventListener('mouseenter', dodge);
+    noBtn.addEventListener('click', (e) => { e.preventDefault(); dodge(); });
+    noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); dodge(); }, { passive: false });
+  }
+
+  /* ============ Background: floating hearts + sparkles ============ */
+  function initBackgroundEffects() {
+    createSparkles(40);
+    setInterval(spawnHeart, 650);
+    spawnHeart();
+  }
+
+  function createSparkles(count) {
+    const container = document.createElement('div');
+    container.className = 'sparkle-container';
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('div');
+      s.className = 'sparkle';
+      s.style.left = `${Math.random() * 100}%`;
+      s.style.top = `${Math.random() * 100}%`;
+      s.style.animationDuration = `${2 + Math.random() * 3}s`;
+      s.style.animationDelay = `${Math.random() * 3}s`;
+      container.appendChild(s);
+    }
+    document.body.appendChild(container);
+  }
+
+  function spawnHeart() {
+    const emojis = ['💗', '💕', '💖', '💓', '💞'];
+    const heart = document.createElement('div');
+    heart.className = 'floating-heart';
+    heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    heart.style.left = `${Math.random() * 96}%`;
+    heart.style.fontSize = `${16 + Math.random() * 22}px`;
+    heart.style.animationDuration = `${7 + Math.random() * 6}s`;
+    document.getElementById('floatingHearts').appendChild(heart);
+    setTimeout(() => heart.remove(), 14000);
+  }
+
+  /* ============ Background Music ============ */
+
+const songs = [
+  "music/song1.mp3",
+  "music/song2.mp3",
+  "music/song3.mp3",
+  "music/song4.mp3",
+  "music/song5.mp3",
+  "music/song6.mp3",
+  "music/song7.mp3",
+  "music/song8.mp3",
+  "music/song9.mp3",
+  "music/song10.mp3",
+  "music/song11.mp3"
+];
+
+const backgroundMusic = document.getElementById('backgroundMusic');
+backgroundMusic.volume = 0.7; // Set initial volume (0.0 to 1.0)
+
+let lastSongIndex = -1;
+
+function playRandomSong() {
+  let randomIndex;
+
+  // Pick a different song from the previous one
+  do {
+    randomIndex = Math.floor(Math.random() * songs.length);
+  } while (songs.length > 1 && randomIndex === lastSongIndex);
+
+  lastSongIndex = randomIndex;
+
+  backgroundMusic.src = songs[randomIndex];
+
+  backgroundMusic.play().catch((error) => {
+    console.log("Music could not start:", error);
+  });
+}
+
+function startMusic() {
+  if (backgroundMusic.paused) {
+    playRandomSong();
+  }
+}
+
+// Automatically choose another song when the current one ends
+backgroundMusic.addEventListener('ended', () => {
+  playRandomSong();
+});
+
+  /* ============ Sending her answer back to you ============ */
+  function sendResponse(answer) {
+    // 1) Sign up free at https://formspree.io, create a form, and paste your endpoint below.
+    const FORM_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
+
+    if (FORM_ENDPOINT.includes('YOUR_FORM_ID')) {
+      console.log('Formspree not configured yet — her answer was:', answer);
+      return;
+    }
+
+    fetch(FORM_ENDPOINT, {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: new URLSearchParams({ answer, time: new Date().toLocaleString() })
+    }).catch((err) => console.log('Could not send response:', err));
+  }
+
+  /* ============ Confetti burst on acceptance ============ */
+  function launchConfetti() {
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ['#ff6fa5', '#ff9ecb', '#ffd1e8', '#c9a7ff', '#ffb6c1'];
+    const pieces = Array.from({ length: 150 }, () => ({
+      x: Math.random() * canvas.width,
+      y: -20 - Math.random() * canvas.height * 0.5,
+      size: 6 + Math.random() * 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      speed: 2 + Math.random() * 3,
+      drift: -1 + Math.random() * 2,
+      rotation: Math.random() * 360,
+      spin: -6 + Math.random() * 12
+    }));
+
+    let frame = 0;
+    const totalFrames = 260;
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pieces.forEach((p) => {
+        p.y += p.speed;
+        p.x += p.drift;
+        p.rotation += p.spin;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        ctx.restore();
+      });
+      frame++;
+      if (frame < totalFrames) {
+        requestAnimationFrame(draw);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+    draw();
+  }
+</script>
+</body>
+</html>
